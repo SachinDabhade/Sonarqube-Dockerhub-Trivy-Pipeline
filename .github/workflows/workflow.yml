@@ -29,7 +29,7 @@ jobs:
         id: sonar_quality_gate
         run: |
           STATUS=$(curl -s -u ${{ secrets.SONARQUBE_TOKEN }}: \
-          "http://13.232.4.242:9000/api/qualitygates/project_status?projectKey=test" \
+          "http://13.232.4.242:9093/api/qualitygates/project_status?projectKey=test" \
           | jq -r '.projectStatus.status')
  
           echo "Quality Gate Status: $STATUS"
