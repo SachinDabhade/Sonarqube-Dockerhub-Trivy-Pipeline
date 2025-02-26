@@ -28,7 +28,7 @@ jobs:
       - name: SonarQube Quality Gate Check
         id: sonar_quality_gate
         run: |
-          STATUS=$(curl -s -u ${{ secrets.SONARQUBE_TOKEN }}: \
+          STATUS=$(curl -s -u sqp_d405ba0b3990d827c3b37a866c04ce99ccab80f7: \
           "http://13.232.4.242:9093/api/qualitygates/project_status?projectKey=test" \
           | jq -r '.projectStatus.status')
  
