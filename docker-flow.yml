@@ -1,0 +1,22 @@
+name: Devops SonarQube Analysis
+ 
+on:
+  push:
+    branches:
+      - main
+ 
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+ 
+      - name: Run SonarScanner
+        run: |
+          docker run --rm -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli \
+          sonar-scanner \
+            -Dsonar.projectKey=python-project-sonarqube \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=http://13.232.4.242:9093 \
+            -Dsonar.login=sqp_c95adecdcc8b4443d3db5fca6b9598bf8f6cbef4
