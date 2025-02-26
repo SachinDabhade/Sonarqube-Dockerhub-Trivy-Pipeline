@@ -18,11 +18,11 @@ jobs:
       - name: Run SonarScanner
         run: |
           docker run --rm -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli \
-            sonar-scanner \
-              -Dsonar.projectKey=test \
-              -Dsonar.sources=. \
-              -Dsonar.host.url=http://13.232.4.242:9093 \
-              -Dsonar.login=${{ secrets.SONARQUBE_TOKEN }}
+          sonar-scanner \
+            -Dsonar.projectKey=Sonarqube-DockerHub-Trivy-Pipeline \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=http://13.232.4.242:9093 \
+            -Dsonar.login=sqp_d405ba0b3990d827c3b37a866c04ce99ccab80f7
 
       # Step 3: SonarQube Quality Gate Check
       - name: SonarQube Quality Gate Check
