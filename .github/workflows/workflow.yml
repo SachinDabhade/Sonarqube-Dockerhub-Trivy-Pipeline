@@ -1,30 +1,26 @@
 name: CI/CD Pipeline with SonarQube & Docker Security Scan
-
+ 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
+ 
 jobs:
   sonar:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the code
       - name: Checkout Code
         uses: actions/checkout@v3
-
-      # Step 2: Run SonarQube Analysis using SonarScanner
+ 
       - name: Run SonarScanner
         run: |
           docker run --rm -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli \
-          sonar-scanner \
-            -Dsonar.projectKey=Sonarqube-DockerHub-Trivy-Pipeline \
+            -Dsonar.projectKey=test \
             -Dsonar.sources=. \
             -Dsonar.host.url=http://13.232.4.242:9093 \
             -Dsonar.login=sqp_d405ba0b3990d827c3b37a866c04ce99ccab80f7
-
-      # Step 3: SonarQube Quality Gate Check
+ 
       - name: SonarQube Quality Gate Check
         id: sonar_quality_gate
         run: |
@@ -33,57 +29,46 @@ jobs:
           | jq -r '.projectStatus.status')
  
           echo "Quality Gate Status: $STATUS"
-          
           if [[ "$STATUS" != "OK" ]]; then
             echo "❌ SonarQube Quality Gate failed!"
             exit 1
           fi
-
-          if [[ "$STATUS" == "null" ]]; then
-            echo "❌ Failed to retrieve SonarQube Quality Gate status!"
-          fi
-
+ 
   docker:
-    needs: sonar  # This job depends on the sonar job
+    needs: sonar
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the code
       - name: Checkout Code
         uses: actions/checkout@v3
-
-      # Step 2: Set Image Tag (commit hash + timestamp)
+ 
       - name: Set Image Tag
         run: |
           COMMIT_HASH=$(git rev-parse --short HEAD)
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
           echo "IMAGE_TAG=${COMMIT_HASH}_${TIMESTAMP}" >> $GITHUB_ENV
-
-      # Step 3: Build the Docker image
+ 
       - name: Build Docker Image
         run: |
           IMAGE_NAME=sachindabhade1905/sonarqube-dockerhub-trivy-pipeline:${IMAGE_TAG}
           echo "Building Docker image with tag $IMAGE_NAME"
           docker build . --file Dockerfile --tag $IMAGE_NAME
           echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
-
-      # Step 4: Scan Docker image for vulnerabilities using Trivy
+ 
       - name: Scan Docker Image for Vulnerabilities
         id: trivy_scan
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: "${{ env.IMAGE_NAME }}"
           format: "table"
-          exit-code: 1  # Fails the pipeline if vulnerabilities are found
+          exit-code: 1 # Fails pipeline if vulnerabilities are found
           ignore-unfixed: true
-
-      # Step 5: Log in to Docker Hub (only if Trivy scan passed)
+ 
       - name: Log in to Docker Hub
-        if: success()  # Runs only if Trivy scan passed
-        run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
-
-      # Step 6: Push the Docker image to Docker Hub (only if Trivy scan passed)
+        if: success() # Runs only if Trivy scan passed
+        run: echo "${{ secrets.PASS }}" | docker login -u "${{ secrets.USER }}" --password-stdin
+ 
       - name: Push Docker Image
-        if: success()  # Runs only if Trivy scan passed
+        if: success()
         run: |
           docker push ${{ env.IMAGE_NAME }}
           echo "✅ Docker image pushed: ${{ env.IMAGE_NAME }}"
