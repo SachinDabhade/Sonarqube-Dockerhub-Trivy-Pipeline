@@ -17,16 +17,16 @@ jobs:
         run: |
           docker run --rm -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli \
           sonar-scanner \
-            -Dsonar.projectKey=python-project-sonarqube \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=http://13.200.229.80:9000 \
-            -Dsonar.login=sqp_b00718df7c5feaf558d67129583aa838c3fd071d
+           -Dsonar.projectKey=python-project-sonarqube \
+           -Dsonar.sources=. \
+           -Dsonar.host.url=http://13.200.229.80:9093 \
+           -Dsonar.login=sqp_977ccc408bac23338368914e6bdedba9143b4ecf
  
       - name: SonarQube Quality Gate Check
         id: sonar_quality_gate
         run: |
-          STATUS=$(curl -s -u sqp_b00718df7c5feaf558d67129583aa838c3fd071d: \
-          "http://13.232.4.242:9093/api/qualitygates/project_status?projectKey=python-project-sonarqube" \
+          STATUS=$(curl -s -u sqp_977ccc408bac23338368914e6bdedba9143b4ecf: \
+          "http://13.200.229.80:9093/api/qualitygates/project_status?projectKey=python-project-sonarqube" \
           | jq -r '.projectStatus.status')
  
           echo "Quality Gate Status: $STATUS"
